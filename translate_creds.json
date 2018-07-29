@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "boreal-quarter-210111",
+  "private_key_id": "fd2c1aa988a275b115f80147ce54a28990a5bb2b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDEh3aoTpbFT8Zl\nyghUIUERuCe4SfQUedjvzEpz7jnYSKkjg9GoY/yxqzE0/Mc5DxN2B0MtuhXJLXit\nuiBExOndWlgsXhmEsiaE23/Pg2w0nJPjxCvZS/l5ZYfo38Ko8dhKE29CwCtNPq2z\nh4GAcwIBo01Yb+ux1MX0dEuvT6ZFw3cBwp6ZENxL2xtFz57mG/FWVtCv5gnhTHIi\ns3K6doukRL2yBe105oj5+X2xBkWfn1uggHWRZhLFXK5qJ3D5BzFnjsWJNmW8KWeX\nB3GMmjvdWEAD7B6RDh9WoJYP5dZDvdjwjU4EBwUqUKJB2R1osrKp94nuRdwjNX1u\nxxoNbcy1AgMBAAECggEAES4KWGIuWedEX6eOnNQfXQ4tIrYMSTHxndzM8V903QxV\nBM7EKCU9dMaTUZ97RuijeeDepYOr3d9EumMX6QsRqpD4PkCnmGr+ZQTPInPJpLu/\nTdzbPG6gy1Tt0ZSl7qDdmHQkeMBVyLXe91+0GWd0WHJPE5kNEImaGGmGKDgdP+HU\nKekWDRxuKnojhZLJBfqYKbJH+8o7SLw9gbAGxpReL66P2SCdI1DedftzyDWXkRGS\n7rlrPhDlJp0JCN8GpVx4rX3/M4X9U0PjfJ/2WV44M/Emxm1IHMp7JrYDsxh88Ake\nXRqDd/FhGPP2vzELSPmar2sjyaCD6/0BRA1xGFVcLQKBgQDo+lioQgx7fo7x7W8m\ndeq1OfiU7TD9Ymfbod+/DxCmjmI7msRVICWP6hpOFLoMBDa6yL+xcK4W1Q7EiUxY\n49W+VjT+vBLS2tHX0y4g8XEUCYuhzFB2RpVcmaAFDTieNQeq+Tea6KGZV+GxXYY8\nrvdLEQ/5dBh8pTp0Zkc7CJpgewKBgQDX8xIz6C1MEoA4MYgrMEPoIoPIeGL1kuNq\nUCQooKrPO3nghiTC60CaYZq9O3LjM5lsl7+bFdqmY5VKiTnZA9mkT+yUjV1yj8hQ\nEOkLjZiHlHcDq73cqI06npB6cIxrMsUWI59+W7/RJxBbPC8E62HIKRDjgyU3QM9p\nU6DAsBU4jwKBgEbSIzUyrryzohxkws78NVbVwnzzBVthGJUpRey8VaFr0uyvhVMj\nLIfs8AYgQtX4SfLJp4v25tTF+3E/E1hKGeV8KyvsXASAxB1JctJM0sT2id2rUCJE\nHo9Bm+UtObLOCACvNXn/kXAdyNuzxGSaA05sZ2C7K95oE7biiHCnktYVAoGACDRq\nCqLVpcBGMtxe6hUpX1aAX0uDpwTvswhcd1azZrBBzzAJkYZSrArtUCdEFDHPsHqL\ngx7vccby0yQnmIE28bE/sd01IbcoyzH5SMEWfIA9jVwnGI0m4IVJw/0muKPzLQYp\ndymRPicXzf+ZYbx3uJ0m0R4YeeLyfnP49Zk7FS0CgYBt6pC6nP0CUCRI/M6FgiwI\nkPCSTa7ch4u4nOxy0j89nyuEpmM7iVE8VHx520a8l22+MXAzbZa0hz6iCnZ7KcGJ\nx3KVWwIJT/Y2mFFBUhAupN4+/+p8tfQMTSWkk1xxMySs45IwfdB+2SZWaD82MuQ/\nhUSJu0cBxTMwCTZbrrOxWg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "jeroarenas@boreal-quarter-210111.iam.gserviceaccount.com",
+  "client_id": "109147224661520065818",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/jeroarenas%40boreal-quarter-210111.iam.gserviceaccount.com"
+}
