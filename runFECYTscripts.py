@@ -18,6 +18,7 @@ from progress.bar import Bar
 
 from dbmanager.FECYTmanager import FECYTmanager
 from lemmatizer.ESlemmatizer import ESLemmatizer
+from lemmatizer.ENlemmatizer import ENLemmatizer
 
 def main(resetDB=False):
     """Genera la Base de Datos a partir de los ficheros Excel proporcionados por FECYT
@@ -48,6 +49,7 @@ def main(resetDB=False):
     file_allresearchers = './data_Pr_FECYT/All_Researchers.xlsx'
     file_allorganizations = './data_Pr_FECYT/All_Organizations.xlsx'
     file_coordinados = './data_Pr_FECYT/cordinated.xlsx'
+    file_BIOTICENE = './data_Pr_FECYT/BIOTICENE_Indicadores2017.xlsx'
 
     ####################################################
     #1. Database connection
@@ -77,6 +79,7 @@ def main(resetDB=False):
     # DB.updateprojectdata(file_allprojects_ESP)
     # DB.updateprojectdata(file_allprojects_ENG)
     # DB.updateprojectdata(file_allprojects_LEMAS)
+    # DB.updateprojectdata(file_BIOTICENE)
 
     # ####################################################
     # #5. Processing excel files with organization information by CIF
@@ -102,8 +105,7 @@ def main(resetDB=False):
     #     df.to_excel(writer, sheet_name=fld, index=False)
     # writer.save()
 
-    # for cc in ['2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016']:
-    DB.run_translator_ENG('2007')
+    # DB.run_translator_ENG()
     # writer = pd.ExcelWriter(file_allprojects_ENG[:-5]+'_new.xlsx')
     # for fld in ['TITULO_ENG', 'RESUMEN_ENG', 'PALABRAS_ENG']:
     #     df = DB.readDBtable('proyectos', limit=None,
@@ -150,7 +152,27 @@ def main(resetDB=False):
     # DB.setField('proyectos', 'REFERENCIA', 'LEMAS_UC3M', allLEMAS)
 
     # ####################################################
-    # #9. Lematización de textos en inglés
+    # #10. Lematización de textos en inglés
+    # enLM = ENLemmatizer()
+    # df = DB.readDBtable('proyectos',limit=None,selectOptions='REFERENCIA, TITULO_ENG, PALABRAS_ENG, RESUMEN_ENG',
+    #                     filterOptions='TITULO_ENG IS NOT NULL')
+    # allprojects = df.values.tolist()
+
+    # lchunk = 1000
+    # nproyectos = len(allprojects)
+    # bar = Bar('Lemmatizing English Descriptions', max=1+nproyectos/lchunk)
+
+    # allLEMAS = []
+    # for index,x in enumerate(allprojects):
+    #     if not (index+1)%lchunk:
+    #         DB.setField('proyectos', 'REFERENCIA', 'LEMAS_UC3M_ENG', allLEMAS)
+    #         allLEMAS = []
+    #         bar.next()
+    #     allLEMAS.append((x[0], enLM.processENstr(x[1]) + '*****' + enLM.processENstr(x[2]) + \
+    #              '*****' + enLM.processENstr(x[3])))
+    # bar.finish()
+    # DB.setField('proyectos', 'REFERENCIA', 'LEMAS_UC3M_ENG', allLEMAS)
+
 
 
 

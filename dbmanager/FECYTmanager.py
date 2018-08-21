@@ -37,7 +37,8 @@ from dbmanager.FECYT_coordinados import Tambourine
 ###################
 
 BASE_URL = 'https://api.deepl.com/v1/translate'
-Key = 'af57cd8e-0dcb-832a-2f22-55f3134043c1'
+#Key = 'af57cd8e-0dcb-832a-2f22-55f3134043c1'
+Key = 'b60c7526-3c20-2f3a-e1f7-82422c17884d'
 
 LANGUAGES = {
     'auto': 'Auto',
@@ -70,6 +71,7 @@ def deepL_translate(text):
     text = text.replace('\x01',' ').replace('\x02', ' ').replace('\x03',' ')
     text = text.replace('\xa0',' ')
     text = text.replace('\r', ' ').replace('\t',' ').replace('#8194',' ')
+    text = text.replace('\x7f','')
     text = text.replace(' ', '%20').strip()
     data = str('auth_key='+Key+'&text='+text+'&target_lang=EN&source_lang=ES').encode('utf8')
     headers = {  'Content-Type':'application/x-www-form-urlencoded',
@@ -1075,6 +1077,7 @@ class FECYTmanager(BaseDMsql):
 
                         LEMAS_SETSI TEXT CHARACTER SET utf8,
                         LEMAS_UC3M TEXT CHARACTER SET utf8,
+                        LEMAS_UC3M_ENG TEXT CHARACTER SET utf8,
 
                         `TOTAL CONCEDIDO` FLOAT NOT NULL,
                         `TOTAL SOLICITADO` FLOAT,
@@ -1093,7 +1096,11 @@ class FECYTmanager(BaseDMsql):
                         INVEST_EDADES TEXT CHARACTER SET utf8,
                         `SEXO IP` VARCHAR(10) CHARACTER SET utf8,
                         `EDAD IP` SMALLINT UNSIGNED,
-                        `EXTR IP` VARCHAR(10) CHARACTER SET utf8
+                        `EXTR IP` VARCHAR(10) CHARACTER SET utf8,
+
+                        Ind2017_BIO VARCHAR(1) CHARACTER SET utf8,
+                        Ind2017_TIC VARCHAR(1) CHARACTER SET utf8,
+                        Ind2017_ENE VARCHAR(1) CHARACTER SET utf8
 
                         )"""
         self._c.execute(sql_cmd)
@@ -1794,7 +1801,7 @@ class FECYTmanager(BaseDMsql):
 
         # Read only  those projects that have no Spanish version in the output
         # field.
-        rawData = self.readDBtable('proyectos', limit=5000, selectOptions=selectOptions,
+        rawData = self.readDBtable('proyectos', limit=5200, selectOptions=selectOptions,
                     filterOptions=filterOptions, orderOptions=None)
         rawData = rawData.values.tolist()
 

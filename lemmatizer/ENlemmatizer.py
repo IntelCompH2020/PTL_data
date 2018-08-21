@@ -129,7 +129,7 @@ class ENLemmatizer (object):
                                  "references": false,
                                  "text": "'''+ el +'''"}'''
 
-                    response = requests.post(self.__url, headers=self.__headers, data=data)
+                    response = requests.post(self.__url, headers=self.__headers, data=str(data).encode('utf-8'))
                     
                     if (response.ok):
                         # 2. and 3. and 5. Tokenization and lemmatization and N-gram detection
