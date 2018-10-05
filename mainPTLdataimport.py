@@ -136,8 +136,12 @@ while not var_exit:
 
     elif option1 == 'Regenerate db_Pr_CORDIS':
 
-        print("\n*** Regenerating database for CORDIS projects")
-        print("*** This option is NOT IMPLEMENTED YET")
+        # print("\n*** Regenerating database for CORDIS projects")
+        # if request_confirmation('This action will delete the existing database and regenerate if from scratch. Are you sure?'):
+        #     cmd = 'python runCORDISscripts.py --resetDB'
+        #     os.system(cmd)
+
+        print('Update from the utility deactivated. This database has been generated and is stable')
 
     elif option1 == 'Regenerate db_Pr_NSF':
 
