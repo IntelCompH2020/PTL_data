@@ -42,10 +42,13 @@ def main(resetDB=False):
     #
     dir_projects = './data_Pr_CORDIS/data/ProjectData/Excel/'
     dir_organizations = './data_Pr_CORDIS/data/OrganizationData/Excel/'
+    dir_researchers = './data_Pr_CORDIS/data/ResearcherProject/Excel/'
     file_countries = './data_Pr_CORDIS/data/Countries/Excel/cordisref-countries.xls'
     file_activities = './data_Pr_CORDIS/data/OrgActivity/Excel/cordisref-organizationActivityType.xls'
     file_fundingsch = './data_Pr_CORDIS/data/FundingScheme/Excel/cordisref-projectFundingSchemeCategory.xls'
     file_sicCodes = './data_Pr_CORDIS/data/sicCodes/Excel/cordisref-sicCode.xls'
+    file_tpc2020 = './data_Pr_CORDIS/data/Topics/Excel/cordisref-H2020topics.xlsx'
+    dir_programmes = './data_Pr_CORDIS/data/Programmes/Excel/'
 
     ####################################################
     #1. Database connection
@@ -61,9 +64,9 @@ def main(resetDB=False):
         # The following method deletes all existing tables, and create them
         # again without data
     #     DB.deleteDBtables()
-        DB.createDBtables(dir_projects, dir_organizations,
+        DB.createDBtables(dir_projects, dir_organizations, dir_researchers,
             file_countries, file_activities, file_fundingsch,
-            file_sicCodes)
+            file_sicCodes, file_tpc2020, dir_programmes)
 
 
     # # ####################################################

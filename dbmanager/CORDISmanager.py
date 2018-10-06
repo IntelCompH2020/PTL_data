@@ -98,16 +98,20 @@ class CORDISmanager(BaseDMsql):
             db_name, db_connector, path2db, db_server, db_user,
             db_password, db_port)
 
-    def createDBtables(self, prj_dir, org_dir, ctr_file, act_file, fs_file, sic_file):
+    def createDBtables(self, prj_dir, org_dir, rsr_dir,
+            ctr_file, act_file, fs_file, sic_file, tpc2020_file, prg_dir):
         """
         Create DB table structure and fill in with some data
 
             * prj_dir: Relative path to directory with project Excel files
             * org_dir: Relative path to directory with organization Excel files
+            * rsr_dir: Relative path to directory with researcher Excel files
             * ctr_file: Relative path to excel file with country information
             * act_file: Relative path to excel file with organization activities
             * fs_file: Relative path to excel file with funding scheme information
             * sic_file: Relative path to excel file with SIC Codes information
+            * tpc2020_file: Relative path to excel file with H2020 Topics Information
+            * prg_dir: Relative path to directory with programme information
 
         """
 
@@ -438,6 +442,125 @@ class CORDISmanager(BaseDMsql):
             fieldnames = ['code', 'SICtitle', 'description', 'language']
             fieldvalues = df.values.tolist()
             self.insertInTable('sicCodes', fieldnames, fieldvalues)
+
+        if 'topics2020' not in self.getTableNames():
+            ####create sicCodes table
+            sql_cmd = """CREATE TABLE topics2020(
+                            topicRCN INT(11) NOT NULL PRIMARY KEY,
+                            topicCODE VARCHAR(100) CHARACTER SET utf8 NOT NULL,
+                            title VARCHAR(255) CHARACTER SET utf8,
+                            language VARCHAR(2) CHARACTER SET utf8
+                            )"""
+            self._c.execute(sql_cmd)
+
+            #Fill table with data from tpc2020_file
+            df = pd.read_excel(tpc2020_file)
+            df = df.replace(np.nan, '', regex=True)
+            fieldnames = ['topicRCN', 'topicCODE', 'title', 'language']
+            fieldvalues = df.values.tolist()
+            self.insertInTable('topics2020', fieldnames, fieldvalues)
+
+        if 'programmes' not in self.getTableNames():
+            ####create sicCodes table
+            sql_cmd = """CREATE TABLE programmes(
+                            prgRCN INT(11) NOT NULL,
+                            prgCODE VARCHAR(45) CHARACTER SET utf8,
+                            title VARCHAR(400) CHARACTER SET utf8,
+                            shortTitle VARCHAR(100) CHARACTER SET utf8,
+                            language VARCHAR(2) CHARACTER SET utf8
+                            )"""
+            self._c.execute(sql_cmd)
+
+            #Fill table with programmes data
+            #We process all excel files in the indicated directory
+            #and concatenate all available information in one dataframe
+            flds = ['rcn', 'code', 'title', 'shortTitle', 'language']
+            df_all = pd.DataFrame(columns=flds)
+
+            for root, dirs, files in os.walk(prg_dir):
+                for file in files:
+                    if file.endswith('.xls') or file.endswith('.xlsx'):
+                        if not file.startswith('~'):
+                            print('Importing programmes file:', os.path.join(root,file))
+                            df = pd.read_excel(os.path.join(root,file))
+                            df_all = df_all.append(df, ignore_index=True)
+
+            #Fill table with data from sic_file
+            df_all = df_all.replace(np.nan, '', regex=True)
+            fieldvalues = df_all.values.tolist()
+            fieldnames = ['prgRCN', 'prgCODE', 'title', 'shortTitle', 'language']
+            self.insertInTable('programmes', fieldnames, fieldvalues)
+
+        if 'researchers' not in self.getTableNames():
+            ####create sicCodes table
+            sql_cmd = """CREATE TABLE researchers(
+                            researcherID int(11) NOT NULL PRIMARY KEY,
+                            title VARCHAR(5) CHARACTER SET utf8,
+                            firstName VARCHAR(40) CHARACTER SET utf8,
+                            lastName VARCHAR(60) CHARACTER SET utf8
+                            )"""
+            self._c.execute(sql_cmd)
+
+            sql_cmd = """CREATE TABLE rschprojects(
+                            researcherID INT(11) NOT NULL,
+                            projectRcn INT(11) NOT NULL
+                            )"""
+            self._c.execute(sql_cmd)
+
+            #Fill table with researchers data
+            #We process all excel files in the indicated directory
+            #and concatenate all available information in one dataframe
+            flds = ['projectId', 'projectAcronym', 'fundingScheme', 'title',
+                     'firstName', 'lastName', 'organisationId']
+            df_all = pd.DataFrame(columns=flds)
+
+            for root, dirs, files in os.walk(rsr_dir):
+                for file in files:
+                    if file.endswith('.xls') or file.endswith('.xlsx'):
+                        if not file.startswith('~'):
+                            print('Importing researchers file:', os.path.join(root,file))
+                            df = pd.read_excel(os.path.join(root,file))
+                            df_all = df_all.append(df, ignore_index=True)
+
+            #Fill table with data from sic_file
+            df_all = df_all.replace(np.nan, '', regex=True)
+
+            #Obtain a list of unique researchers, and assign them a unique identifier
+            df_researchers = df_all[['title', 'firstName', 'lastName']].drop_duplicates().reset_index()
+            df_researchers['researcherID'] = df_researchers.index
+
+            #Save them to database
+            fieldnames = ['researcherID', 'title', 'firstName', 'lastName']
+            df_researchers = df_researchers[fieldnames]
+            self.insertInTable('researchers', fieldnames, df_researchers.values.tolist())
+
+            #Next, we need to obtain the pairs researcher - project_rcn
+            #However, a mapping is necessary because df_all contain the references for projects
+            #and not the rcns
+
+            #Read from dataset pairs of project_rcn vs project_reference to map references
+            #in the researcher files with project rcns
+            df_prj = self.readDBtable('projects', selectOptions='rcn, reference')
+            #And Map rcns in the big dataframe
+            df_all['projectId'] = df_all['projectId'].map(str)
+            df_all = df_all.join(df_prj.set_index('reference'), on='projectId')
+
+            # We also need to add a column with the referenceID for the researchers
+            # We compute for that a new field for the join operation
+            df_researchers['uniquename'] = df_researchers['title'] + \
+                    df_researchers['firstName']+df_researchers['lastName']
+            df_all['uniquename'] = df_all['title'] + \
+                    df_all['firstName']+df_all['lastName']
+
+            df_researchers = df_researchers[['uniquename', 'researcherID']]
+            df_all = df_all.join(df_researchers.set_index('uniquename'), on='uniquename')
+
+            #Save to DB pairs with a valid rcn
+            df_all = df_all[['researcherID', 'rcn']]
+            df_all = df_all.dropna()
+
+            fieldnames = ['researcherID', 'projectRcn']
+            self.insertInTable('rschprojects', fieldnames, df_all.values.tolist())
 
         #Commit changes to database
         self._conn.commit()
