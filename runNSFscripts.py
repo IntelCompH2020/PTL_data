@@ -59,10 +59,11 @@ def main(resetDB=False):
     # ####################################################
     # # 4. Lematización de textos en inglés
     enLM = ENLemmatizer()
-    df = DB.readDBtable('total_projects',limit=None,selectOptions='ProjectID, Title, AbstractNarration')
+    df = DB.readDBtable('total_projects',limit=None,selectOptions='ProjectID, Title, AbstractNarration',
+                            filterOptions='LEMAS_UC3M_ENG is NULL' )
     allprojects = df.values.tolist()
 
-    lchunk = 1000
+    lchunk = 100
     nproyectos = len(allprojects)
     bar = Bar('Lemmatizing English Descriptions', max=1+nproyectos/lchunk)
 
@@ -74,7 +75,7 @@ def main(resetDB=False):
             bar.next()
         allLEMAS.append((x[0], enLM.processENstr(x[1]) + '*****' + enLM.processENstr(x[2])))
     bar.finish()
-    DB.setField('proyectos', 'ProjectID', 'LEMAS_UC3M_ENG', allLEMAS)
+    DB.setField('total_projects', 'ProjectID', 'LEMAS_UC3M_ENG', allLEMAS)
 
 
 if __name__ == "__main__":
