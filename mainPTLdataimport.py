@@ -146,7 +146,9 @@ while not var_exit:
     elif option1 == 'Regenerate db_Pr_NSF':
 
         print("\n*** Regenerating database for NSF projects")
-        print("*** This option is NOT IMPLEMENTED YET")
+        if request_confirmation('This action will delete the existing database and regenerate if from scratch. Are you sure?'):
+            cmd = 'python runNSFscripts.py --resetDB'
+            os.system(cmd)
 
     elif option1 == 'Regenerate db_Pa_PATSTAT':
 
