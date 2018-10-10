@@ -60,7 +60,7 @@ def main(resetDB=False):
     # # 4. Lematización de textos en inglés
     enLM = ENLemmatizer()
     df = DB.readDBtable('total_projects',limit=None,selectOptions='ProjectID, Title, AbstractNarration',
-                            filterOptions='LEMAS_UC3M_ENG is NULL' )
+                            filterOptions='LEMAS_UC3M_ENG is NULL and YEAR(AwardEffectiveDate)>2006' )
     allprojects = df.values.tolist()
 
     lchunk = 100
