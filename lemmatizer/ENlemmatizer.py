@@ -14,7 +14,8 @@ import re
 from nltk import sent_tokenize
 import requests
 import json
-import langdetect
+#import langdetect
+import langid
 
 # # Fichero con un diccionario de equivalencias
 # dict_eq_file = './lemmatizer/lemafiles/diccionario_equivalencias.txt'
@@ -99,6 +100,9 @@ class ENLemmatizer (object):
         else:
             self.__useunigrams = False
 
+        #Set languages for language detection
+        langid.set_languages(['de', 'en', 'fr', 'es', 'it', 'nl'])
+
 
     def processENstr(self, text, keepsentence=True, removenumbers=True,
                      langtodetect=['en']):
@@ -122,7 +126,7 @@ class ENLemmatizer (object):
                               also be removed
         :param langtodetect: Acronym for the accepted language
         """
-        if text==None or text=='':
+        if text==None or text=='' or (langid.classify(text)[0] not in langtodetect):
             return ''
         else:
             # 1. Detect sentences
@@ -131,18 +135,20 @@ class ENLemmatizer (object):
             else:
                 strlist = [text]
 
-            # 2. Language detection. Keep only sentences in accepted language
-            if len(langtodetect):
-                strlist2 = []
-                for el in strlist:
-                    try:
-                        if langdetect.detect(el) in langtodetect:
-                            strlist2 += el
-                    except:
-                        pass
-                strlist = strlist2
-                if len(strlist)==0:
-                    return ''
+            # This would be much better since it performs language detection
+            # for each sentence, but it is much slower
+            # # 2. Language detection. Keep only sentences in accepted language
+            # if len(langtodetect):
+            #     strlist2 = []
+            #     for el in strlist:
+            #         try:
+            #             if langid.classify(el)[0] in langtodetect:
+            #                 strlist2 += el
+            #         except:
+            #             pass
+            #     strlist = strlist2
+            #     if len(strlist)==0:
+            #         return ''
 
             # 3. 4. and 5. Tokenization and lemmatization and N-gram detection
             # using https://github.com/librairy/nlpEN-service

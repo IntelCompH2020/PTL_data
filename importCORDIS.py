@@ -96,7 +96,7 @@ def main(resetDB=False, lemmatize=False, projects=False, organizations=False, re
         allprojects = df.values.tolist()
 
         #Chunks for monitoring progress and writing in the database
-        lchunk = 100
+        lchunk = 10
         nproyectos = len(allprojects)
         bar = Bar('Lemmatizing English Descriptions', max=1+nproyectos/lchunk)
 
