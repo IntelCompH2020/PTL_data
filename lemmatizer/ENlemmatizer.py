@@ -14,10 +14,8 @@ import re
 from nltk import sent_tokenize
 import requests
 import json
-import ipdb
+import langdetect
 
-# # Stopwords
-stw_file = './lemmatizer/lemafiles/stopwords/stop-words-english5.txt'
 # # Fichero con un diccionario de equivalencias
 # dict_eq_file = './lemmatizer/lemafiles/diccionario_equivalencias.txt'
 dict_eq_file = ''
@@ -29,26 +27,31 @@ class ENLemmatizer (object):
     ====================================================
     Public methods:
 
-    processESstr: Full processing of string. Includes the following stages:
+    processENstr: Full processing of string. Includes the following stages:
         1. If keepsentence=True, The returned string will separate the original
            strings with \n
-        2. Tokenization of each sentence
-        3. Lemmatization (with removal/addition of tildes as selected)
-        4. Stopwords removal
+        2. Language detection: If activated, preserves only sentences in selected language
+        3. Tokenization of each sentence
+        4. Lemmatization (with removal/addition of tildes as selected)
         5. Ngram identification
-        6. Replacing equivalences
-        7. If selected, remove numbers
+        6. Stopwords removal
+        7. Replacing equivalences
+        8. If selected, remove numbers
 
-        Steps 2-5 are implemented using the REST API of the Ontology group at UPM
+        Steps 3-5 are implemented using the REST API of the Ontology group at UPM
+        https://github.com/librairy/nlpEN-service
 
     =====================================================
     """
 
-    def __init__(self):
+    def __init__(self, generic_stw, specific_stw):
         """
         Initilization Method
-        Stopwwords and the dictionary of equivalences will be loaded
+        Stopwords and the dictionary of equivalences will be loaded
         during initialization
+
+        :param generic_stw: Path to a file with the generic stopwords
+        :param specific_stw: Path to a file with corpus specific stopwords
 
         """
 
@@ -65,15 +68,22 @@ class ENLemmatizer (object):
 
         # Load stopwords
         # Carga de stopwords genericas
-        if os.path.isfile(stw_file):
-            self.__stopwords = self.__loadStopFile(stw_file)
+        if os.path.isfile(generic_stw):
+            self.__stopwords = self.__loadStopFile(generic_stw)
+            #In case there are repetititons
+            self.__stopwords = list(set(self.__stopwords))
         else:
-            self.__stopwords = []
+            print ('The file with generic stopwords could not be found')
+        # Carga de stopwords específicas
+        if os.path.isfile(specific_stw):
+            self.__stopwords += self.__loadStopFile(specific_stw)
+            # In case there are repetititons
+            self.__stopwords = list(set(self.__stopwords))
+        else:
             print ('The file with generic stopwords could not be found')
 
         # Anyadimos equivalencias predefinidas
         if os.path.isfile(dict_eq_file):
-            unigrams = []
             with open(dict_eq_file, 'r') as f:
                 unigramlines = f.read().splitlines()
             unigramlines = [x.split(' : ') for x in unigramlines]
@@ -90,7 +100,8 @@ class ENLemmatizer (object):
             self.__useunigrams = False
 
 
-    def processENstr(self, text, keepsentence=True, removenumbers=True):
+    def processENstr(self, text, keepsentence=True, removenumbers=True,
+                     langtodetect=['en']):
         """
         Full processing of Spanish string. The following operations will be
         carried out on the selected string
@@ -98,51 +109,66 @@ class ENLemmatizer (object):
         happen for other languages
         1. If keepsentence=True, The returned string will separate the original
            strings with \n
-        2. Tokenization of each sentence
-        3. Lemmatization (with removal/addition of tildes as selected)
-        4. Stopwords removal
+        2. Language detection (if activated)
+        3. Tokenization of each sentence
+        4. Lemmatization (with removal/addition of tildes as selected)
         5. Ngram identification
-        6. Replacing equivalences
-        7. If selected, remove numbers
+        6. Stopwords removal
+        7. Replacing equivalences
+        8. If selected, remove numbers
         :param text: The string to process
         :param keepsentence: If True, sentences will be separated by \n
         :param removenumbers: If True, tokens which are purely numbers will
                               also be removed
+        :param langtodetect: Acronym for the accepted language
         """
-
         if text==None or text=='':
             return ''
         else:
             # 1. Detect sentences
             if keepsentence:
-                strlist = sent_tokenize(text, 'english')
+                strlist = sent_tokenize(text.replace('\n', ''), 'english')
             else:
                 strlist = [text]
 
+            # 2. Language detection. Keep only sentences in accepted language
+            if len(langtodetect):
+                strlist2 = []
+                for el in strlist:
+                    try:
+                        if langdetect.detect(el) in langtodetect:
+                            strlist2 += el
+                    except:
+                        pass
+                strlist = strlist2
+                if len(strlist)==0:
+                    return ''
+
+            # 3. 4. and 5. Tokenization and lemmatization and N-gram detection
+            # using https://github.com/librairy/nlpEN-service
             lematizedlist = []
 
             try:
                 for el in strlist:
 
-                    data = '''{ "filter": [ "NOUN", "VERB", "ADJECTIVE" ],
+                    data = '''{ "filter": [ "NOUN", "VERB", "ADJECTIVE", "ADVERB" ],
                                  "multigrams": true,
                                  "references": false,
                                  "text": "'''+ el +'''"}'''
 
                     response = requests.post(self.__url, headers=self.__headers, data=str(data).encode('utf-8'))
-                    
+
                     if (response.ok):
-                        # 2. and 3. and 5. Tokenization and lemmatization and N-gram detection
                         resp = json.loads(response.text)
                         texto = [x['token']['lemma'] for x in resp['annotatedText']]
-                        # 4. Stopwords Removal
+                        # 6. Stopwords Removal
                         texto = ' '.join(
                             [word for word in texto if not word in self.__stopwords])
-                        # 6. Make equivalences according to dictionary
+                        # 7. Make equivalences according to dictionary
                         if self.__useunigrams:
                             texto = self.__pattern_unigrams.sub(
                                 lambda x: self.__unigramdictio[x.group()], texto)
-                        # 7. Removenumbers if activated
+                        # 8. Removenumbers if activated
                         if removenumbers:
                             texto = ' '.join(
                                 [word for word in texto.split() if not
@@ -150,7 +176,7 @@ class ENLemmatizer (object):
 
                         lematizedlist.append(texto)
             except:
-                print('No se puede lematizar el resumen:', text)
+                print('No se puede lematizar el texto:', text)
 
             return '\n'.join(lematizedlist)
 

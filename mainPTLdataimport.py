@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Main program for importing databases for use with projects from the PTL
+Main program for importing databases for use with corpus for the PTL
 
 Created on Jul 4, 2018
 
@@ -9,23 +8,9 @@ Created on Jul 4, 2018
 
 """
 
-
-from __future__ import print_function    # For python 2 compatibility
 import os
-import platform
 import time
-
-
-def clear():
-
-    """Cleans terminal window
-    """
-    # Checks if the application is running on windows or other OS
-    if platform.system() == 'Windows':
-        os.system('cls')
-    else:
-        os.system('clear')
-
+from utils.myutils import clear, request_confirmation
 
 def query_options(options, msg=None, zero_option='exit'):
     """
@@ -78,16 +63,6 @@ def query_options(options, msg=None, zero_option='exit'):
         return options[opcion-1]
 
 
-def request_confirmation(msg="     Are you sure?"):
-
-    # Iterate until an admissible response is got
-    r = ''
-    while r not in ['yes', 'no']:
-        r = input(msg + ' (yes | no): ')
-
-    return r == 'yes'
-
-
 # ################################
 # Main body of application
 
@@ -105,8 +80,8 @@ time_delay = 3
 
 # This is the complete list of level-0 options.
 # The options that are shown to the user will depend on the project state
-options_L0 = ['Regenerate db_Pr_FECYT',
-                'Regenerate db_Pr_CORDIS',
+options_L0 = [  'Manage CORDIS database',
+				'Regenerate db_Pr_FECYT',
                 'Regenerate db_Pr_NSF',
                 'Regenerate db_Pa_PATSTAT']
 
@@ -124,6 +99,47 @@ while not var_exit:
         # Activate flag to exit the application
         var_exit = True
 
+    elif option1 == 'Manage CORDIS database':
+
+        print("\n*** Managing database for CORDIS projects")
+
+        msg = '\nSelect the table to reset:'
+        # We only allow here to import "canonical tables"
+        options_L1 = ['Regenerate complete database',
+                      'Regenerate projects table',
+                      'Regenerate organizations table',
+                      'Regenerate researchers table',
+                      'Regenerate metadata tables']
+        option2 = query_options(options_L1, msg=msg, zero_option='up')
+
+        if option2 != 0:
+            if option2 == 'Regenerate complete database':
+                if request_confirmation(
+                        'This action will delete the existing database and regenerate if from scratch. Are you sure?'):
+                    cmd = 'python importCORDIS.py --resetDB --lemmatize'
+                    os.system(cmd)
+            elif option2 == 'Regenerate projects table':
+                if request_confirmation(
+                        'This action will delete the projects table and regenerate if from scratch. Are you sure?'):
+                    cmd = 'python importCORDIS.py --projects --lemmatize'
+                    os.system(cmd)
+            elif option2 == 'Regenerate organizations table':
+                if request_confirmation(
+                        'This action will delete the organizations tables and regenerate them from scratch. Are you sure?'):
+                    cmd = 'python importCORDIS.py --organizations'
+                    os.system(cmd)
+            elif option2 == 'Regenerate researchers table':
+                if request_confirmation(
+                        'This action will delete the researchers table and regenerate if from scratch. Are you sure?'):
+                    cmd = 'python importCORDIS.py --researchers'
+                    os.system(cmd)
+            elif option2 == 'Regenerate metadata tables':
+                if request_confirmation(
+                        'This action will delete and regenerate the metadata tables. Are you sure?'):
+                    cmd = 'python importCORDIS.py --meta'
+                    os.system(cmd)
+
+
     elif option1 == 'Regenerate db_Pr_FECYT':
 
         # print("\n*** Regenerating database for FECYT projects")
@@ -133,15 +149,6 @@ while not var_exit:
 
         print('Update from the utility deactivated. This database has been generated and is stable')
 
-
-    elif option1 == 'Regenerate db_Pr_CORDIS':
-
-        # print("\n*** Regenerating database for CORDIS projects")
-        # if request_confirmation('This action will delete the existing database and regenerate if from scratch. Are you sure?'):
-        #     cmd = 'python runCORDISscripts.py --resetDB'
-        #     os.system(cmd)
-
-        print('Update from the utility deactivated. This database has been generated and is stable')
 
     elif option1 == 'Regenerate db_Pr_NSF':
 

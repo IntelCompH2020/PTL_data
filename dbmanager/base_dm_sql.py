@@ -1,25 +1,40 @@
 """
-This class provides functionality for managing a generig sqlite or mysql
-database:
+This class provides basic functionality for managing a generig sqlite or mysql
+database. It does not contain functions for creating tables, etc, since these
+are application dependent, so the idea is that other classes inherit from this
+one and provide specific functionality for corpus specific tasks
 
-* reading specific fields (with the possibility to filter by field values)
-* storing calculated values in the dataset
+Important: UTF8 codification is considered for database tables
+
+Provides the following functions:
+
+* getTableNames: Returns names of tables in current database
+* getColumnNames: Returns names of columns in selected table
+* getTableInfo: Gets the number of columns and the number of entries in table
+* deleteDBtables: Deletes one or all tables in database
+* addTableColumn: Creates a new column of the indicated type 
+* dropTableColumn: Drop column from a table in the database
+* readDBtable: Wrapper for the SELECT command (returns pandas dataframe)
+* exportTable: Exports complete table to excel/csv file
+* insertInTable: Wrapper for the INSERT command
+* setField: Wrapper for the UPDATE TABLE SET FIELD command
+* upsert: This is a mixture of UPDATE TABLE SET FIELD and INSERT INTO.
+          UPDATES table using a key column, if some key values are not present
+          in table, then INSERT INTO
 
 Created on May 11 2018
 
-@author: Jerónimo Arenas García
+@authors: Jerónimo Arenas García
+          Jesús Cid Sueiro
 
 """
 
-from __future__ import print_function    # For python 2 copmatibility
 import os
 import pandas as pd
 import MySQLdb
 import sqlite3
 import numpy as np
 import copy
-
-import ipdb
 
 
 class BaseDMsql(object):
@@ -36,14 +51,14 @@ class BaseDMsql(object):
         Args:
             db_name      :Name of the DB
             db_connector :Connector. Available options are mysql or sqlite
-            path2db :Path to the project folder (sqlite only)
+            path2db      :Path to the project folder (sqlite only)
             db_server    :Server (mysql only)
             db_user      :User (mysql only)
             db_password  :Password (mysql only)
             db_port      :port(mysql only) Necessary if not 3306
         """
 
-        # Store paths to the main project folders and files
+        #Variables initialized during object creation
         self._path2db = copy.copy(path2db)
         self.dbname = db_name
         self.connector = db_connector
@@ -108,7 +123,7 @@ class BaseDMsql(object):
             tables: If string, name of the table to reset.
                     If list, list of tables to reset
                     If None (default), all tables are deleted, and all tables
-                    (inlcuding those that might not exist previously)
+                    (including those that might not exist previously)
         """
 
         # If tables is None, all tables are deleted an re-generated
@@ -160,7 +175,7 @@ class BaseDMsql(object):
                     not ('CHARACTER SET' in columntype or
                          'utf8' in columntype)):
 
-                    # We need to enforze utf8 for mysql
+                    # We need to enforce utf8 for mysql
                     fmt = ' CHARACTER SET utf8'
 
                 sqlcmd = ('ALTER TABLE ' + tablename + ' ADD COLUMN ' +
@@ -364,20 +379,6 @@ class BaseDMsql(object):
                 # Make sure we have a list of tuples; necessary for mysql
                 arguments = list(map(tuple, arguments))
 
-                # # Update DB entries one by one.
-                # for arg in arguments:
-                #     # sd
-                #     sqlcmd = ('INSERT INTO ' + tablename + '(' +
-                #               ','.join(columns) + ') VALUES(' +
-                #               ','.join('{}'.format(a) for a in arg) + ')'
-                #               )
-
-                #     try:
-                #         self._c.execute(sqlcmd)
-                #     except:
-                #         import ipdb
-                #         ipdb.set_trace()
-
                 sqlcmd = ('INSERT INTO ' + tablename +
                           '(' + ','.join(columns) + ') VALUES (')
                 if self.connector == 'mysql':
@@ -568,9 +569,4 @@ class BaseDMsql(object):
             df.to_excel(fpath)
 
         return
-
-
-
-
-
 

@@ -1,0 +1,25 @@
+[DB]
+# Connector: mysql or sqlite3
+DB_CONNECTOR = mysql
+dbUSER = PTLprojects
+dbPASS = Kts93_u17a
+dbSERVER = localhost
+
+[CORDIS]
+dbNAME = db_Pr_CORDIS
+dir_projects = ./data_Pr_CORDIS/data/ProjectData/Excel/
+dir_organizations = ./data_Pr_CORDIS/data/OrganizationData/Excel/
+dir_researchers = ./data_Pr_CORDIS/data/ResearcherProject/Excel/
+file_countries = ./data_Pr_CORDIS/data/Countries/Excel/cordisref-countries.xls
+file_activities = ./data_Pr_CORDIS/data/OrgActivity/Excel/cordisref-organizationActivityType.xls
+file_fundingsch = ./data_Pr_CORDIS/data/FundingScheme/Excel/cordisref-projectFundingSchemeCategory.xls
+file_sicCodes = ./data_Pr_CORDIS/data/sicCodes/Excel/cordisref-sicCode.xls
+file_tpc2020 = ./data_Pr_CORDIS/data/Topics/Excel/cordisref-H2020topics.xlsx
+dir_programmes = ./data_Pr_CORDIS/data/Programmes/Excel/
+dir_reports_FP7 = ./data_Pr_CORDIS/data/Reports/XML/cordis-fp7reports-xml/
+dir_reports_H2020 = ./data_Pr_CORDIS/data/Reports/XML/cordis-h2020reports-xml/
+
+generic_stw = ./lemmatizer/lemafiles/stopwords/stop-words-english5.txt
+specific_stw = ./lemmatizer/lemafiles/stopwords/Corpus_specific/stw_CORDIS.txt
+
+
