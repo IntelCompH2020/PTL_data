@@ -5,6 +5,10 @@ dbUSER = PTLprojects
 dbPASS = Kts93_u17a
 dbSERVER = localhost
 
+[MONGODB]
+MONGOdbSERVER = localhost
+MONGOdbPORT = 27017
+
 [CORDIS]
 dbNAME = db_Pr_CORDIS
 dir_projects = ./data_Pr_CORDIS/data/ProjectData/Excel/
@@ -22,4 +26,15 @@ dir_reports_H2020 = ./data_Pr_CORDIS/data/Reports/XML/cordis-h2020reports-xml/
 generic_stw = ./lemmatizer/lemafiles/stopwords/stop-words-english5.txt
 specific_stw = ./lemmatizer/lemafiles/stopwords/Corpus_specific/stw_CORDIS.txt
 
+[SemanticScholar]
+data_files = ./data_Pu_SemanticScholar/data/
+MONGOdbNAME = db_Pu_SScholar
+MONGOdbCollection = SScholar_papers
 
+[ACL]
+dbName = db_Pu_ACL
+data_files = ./data_Pu_ACL/aclanthology.info/papers/
+pdf_files = ./data_Pu_ACL/pdfpapers/
+
+generic_stw = ./lemmatizer/lemafiles/stopwords/stop-words-english5.txt
+specific_stw = 

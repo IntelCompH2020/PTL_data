@@ -81,7 +81,7 @@ class ENLemmatizer (object):
             # In case there are repetititons
             self.__stopwords = list(set(self.__stopwords))
         else:
-            print ('The file with generic stopwords could not be found')
+            print ('The file with specific stopwords could not be found')
 
         # Anyadimos equivalencias predefinidas
         if os.path.isfile(dict_eq_file):
