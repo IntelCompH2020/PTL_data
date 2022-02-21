@@ -1,31 +1,41 @@
 """
-This class provides basic functionality for managing a generig sqlite or mysql
-database. It does not contain functions for creating tables, etc, since these
-are application dependent, so the idea is that other classes inherit from this
-one and provide specific functionality for corpus specific tasks
-
-Important: UTF8 codification is considered for database tables
-
-Provides the following functions:
-
-* getTableNames: Returns names of tables in current database
-* getColumnNames: Returns names of columns in selected table
-* getTableInfo: Gets the number of columns and the number of entries in table
-* deleteDBtables: Deletes one or all tables in database
-* addTableColumn: Creates a new column of the indicated type 
-* dropTableColumn: Drop column from a table in the database
-* readDBtable: Wrapper for the SELECT command (returns pandas dataframe)
-* exportTable: Exports complete table to excel/csv file
-* insertInTable: Wrapper for the INSERT command
-* setField: Wrapper for the UPDATE TABLE SET FIELD command
-* upsert: This is a mixture of UPDATE TABLE SET FIELD and INSERT INTO.
-          UPDATES table using a key column, if some key values are not present
-          in table, then INSERT INTO
+This class provides functionality for managing a generic sqlite
+or mysql database:
 
 Created on May 11 2018
 
-@authors: Jerónimo Arenas García
-          Jesús Cid Sueiro
+@authors: Jerónimo Arenas García (jeronimo.arenas@uc3m.es)
+          Saúl Blanco Fortes (sblanco@tsc.uc3m.es)
+          Jesús Cid Sueiro (jcid@ing.uc3m.es)
+
+Exports class BaseDMsql that can be used to derive new classes
+for specific projects that may include table creation, data import,
+etc for a particular project
+
+The base clase provided in this file implements the following methods:
+* __init__        : The constructor of the class. It creates connection
+                    to a particular database
+* __del__         : Cleanly closes the database
+* deleteDBtables  : Deletes table(s) from database
+* addTableColumn  : Adds a column at the end of table of the database
+* dropTableColumn : Removes column from table (only MySQL)
+* readDBtable     : Reads rows from table and returns a pandas dataframe
+                    with the retrieved data
+* readDBchunks    : RProvides an iterator to read chunks of rows in table.
+                    Each iteration returns a chunk of predefined max number of rows
+                    to avoid stalling the mysql server
+* getTableNames   : Gets the names of the tables in the database
+* getColumnNames  : Gets the names of the columns in a particular table
+* getTableInfo    : Gets the number of rows and the names of columns in table
+* insertInTable   : Insert new records in Table. Input data comes as a list of tuples.
+* deleteFromTable : Delete records from Table. Conditions are given on columname and values
+* setField        : Updates table records. Input data comes as a list of tuples.
+* upsert          : Update or insert records in a table. Input data comes as panda df
+                    If the record exists (according to primary key) data will be updated
+                    If the record does not exist, new records will be created
+* exportTable     : Export a table from database either as pickle or excel file
+* DBdump          : Creates dump of full database, or dump of selected tables
+* execute         : Execute SQL command received as parameter
 
 """
 
@@ -35,7 +45,12 @@ import MySQLdb
 import sqlite3
 import numpy as np
 import copy
+from progress.bar import Bar
 
+def chunks(l, n):
+    """Yields successive n-sized chunks from list l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
 
 class BaseDMsql(object):
     """
@@ -44,7 +59,7 @@ class BaseDMsql(object):
 
     def __init__(self, db_name, db_connector, path2db=None,
                  db_server=None, db_user=None, db_password=None,
-                 db_port=None):
+                 db_port=None, unix_socket=None, charset='utf8mb4'):
         """
         Initializes a DataManager object
 
@@ -55,10 +70,13 @@ class BaseDMsql(object):
             db_server    :Server (mysql only)
             db_user      :User (mysql only)
             db_password  :Password (mysql only)
-            db_port      :port(mysql only) Necessary if not 3306
+            db_port      :port(mysql via TCP only) Necessary if not 3306
+            unix_socket  :socket for local connectivity. If available, connection
+                          is slightly faster than through TCP. 
+            charset      :Codificación a utilizar por defecto en la conexión
         """
 
-        #Variables initialized during object creation
+        # Store paths to the main project folders and files
         self._path2db = copy.copy(path2db)
         self.dbname = db_name
         self.connector = db_connector
@@ -66,6 +84,7 @@ class BaseDMsql(object):
         self.user = db_user
         self.password = db_password
         self.port = db_port
+        self.unix_socket = unix_socket
 
         # Other class variables
         self.dbON = False    # Will switch to True when the db is connected.
@@ -77,17 +96,24 @@ class BaseDMsql(object):
         # Try connection
         try:
             if self.connector == 'mysql':
-                if self.port:
-                    self._conn = MySQLdb.connect(self.server, self.user,
-                                             self.password, self.dbname,
-                                             port=self.port)
+                if self.unix_socket:
+                    self._conn = MySQLdb.connect(host=self.server,
+                                    user=self.user, passwd=self.password,
+                                    db=self.dbname,
+                                    unix_socket=unix_socket, charset=charset)
+                elif self.port:
+                    self._conn = MySQLdb.connect(host=self.server,
+                                    user=self.user, passwd=self.password,
+                                    db=self.dbname, port=self.port,
+                                    charset=charset)
                 else:
-                    self._conn = MySQLdb.connect(self.server, self.user,
-                                             self.password, self.dbname)                    
+                    self._conn = MySQLdb.connect(host=self.server,
+                                    user=self.user, passwd=self.password,
+                                    db=self.dbname, charset=charset)
                 self._c = self._conn.cursor()
-                print("MySQL database connection successful")
+                print('MySQL database connection successful. Default database:', self.dbname)
                 self.dbON = True
-                self._conn.set_character_set('utf8')
+                #self._conn.set_character_set('utf8')
             elif self.connector == 'sqlite3':
                 # sqlite3
                 # sqlite file will be in the root of the project, we read the
@@ -103,6 +129,9 @@ class BaseDMsql(object):
         except:
             print("---- Error connecting to the database")
 
+        return
+
+
     def __del__(self):
         """
         When destroying the object, it is necessary to commit changes
@@ -115,25 +144,32 @@ class BaseDMsql(object):
         except:
             print("---- Error closing database")
 
+        return
+
+    """def setConnCharset(self, charsetcode):
+        self._conn.set_character_set(charsetcode)
+        return
+    """
+
     def deleteDBtables(self, tables=None):
         """
-        Delete existing database, and regenerate empty tables
+        Delete tables from database
 
         Args:
             tables: If string, name of the table to reset.
                     If list, list of tables to reset
-                    If None (default), all tables are deleted, and all tables
-                    (including those that might not exist previously)
+                    If None (default), all tables are deleted
         """
 
-        # If tables is None, all tables are deleted an re-generated
+        # If tables is None, all tables are deleted and re-generated
         if tables is None:
             # Delete all existing tables
+            self._c.execute('SET FOREIGN_KEY_CHECKS = 0')
             for table in self.getTableNames():
                 self._c.execute("DROP TABLE " + table)
+            self._c.execute('SET FOREIGN_KEY_CHECKS = 1')
 
         else:
-
             # It tables is not a list, make the appropriate list
             if type(tables) is str:
                 tables = [tables]
@@ -151,12 +187,10 @@ class BaseDMsql(object):
         Add a new column to the specified table.
 
         Args:
-            tablename  :Table to which the column will be added
-            columnname :Name of new column
-            columntype :Type of new column.
+            tablename  : Table to which the column will be added
+            columnname : Name of new column
+            columntype : Type of new column.
 
-        Note that, for mysql, if type is TXT or VARCHAR, the character set if
-        forzed to be utf8.
         """
 
         # Check if the table exists
@@ -168,18 +202,21 @@ class BaseDMsql(object):
                 #Allow columnames with spaces
                 columnname = '`'+columnname+'`'
 
-                # Fit characters to the allowed format if necessary
+                """# Fit characters to the allowed format if necessary
                 fmt = ''
                 if (self.connector == 'mysql' and
                     ('TEXT' in columntype or 'VARCHAR' in columntype) and
                     not ('CHARACTER SET' in columntype or
-                         'utf8' in columntype)):
+                         'utf8mb4' in columntype)):
 
-                    # We need to enforce utf8 for mysql
-                    fmt = ' CHARACTER SET utf8'
+                    # We enforze utf8mb4 for mysql
+                    fmt = ' CHARACTER SET utf8mb4'
+
 
                 sqlcmd = ('ALTER TABLE ' + tablename + ' ADD COLUMN ' +
-                          columnname + ' ' + columntype + fmt)
+                          columnname + ' ' + columntype + fmt)"""
+                sqlcmd = ('ALTER TABLE ' + tablename + ' ADD COLUMN ' +
+                          columnname + ' ' + columntype)          
                 self._c.execute(sqlcmd)
 
                 # Commit changes
@@ -194,12 +231,14 @@ class BaseDMsql(object):
                   'table name from the list')
             print(self.getTableNames())
 
+        return
+
     def dropTableColumn(self, tablename, columnname):
         """
         Remove column from the specified table
 
         Args:
-            tablename    :Table to which the column will be added
+            tablename    :Table from which the column will be removed
             columnname   :Name of column to be removed
 
         """
@@ -224,7 +263,7 @@ class BaseDMsql(object):
                     self._conn.commit()
 
                 else:
-                    print('Error deleting column. Column drop not yet supported for SQLITE')
+                    print('Error deleting column. Column drop not supported for SQLITE')
 
             else:
                 print('Error deleting column. The column does not exist')
@@ -248,7 +287,7 @@ class BaseDMsql(object):
             selectOptions:  string with fields that will be retrieved
                             (e.g. 'REFERENCIA, Resumen')
             filterOptions:  string with filtering options for the SQL query
-                            (e.g., 'WHERE UNESCO_cd=23')
+                            (e.g., 'UNESCO_cd=23')
             orderOptions:   string with field that will be used for sorting the
                             results of the query
                             (e.g, 'Cconv')
@@ -258,43 +297,97 @@ class BaseDMsql(object):
 
         try:
 
-            # Check that table name is valid
-
-            if tablename in self.getTableNames():
-
-                sqlQuery = 'SELECT '
-                if selectOptions:
-                    sqlQuery = sqlQuery + selectOptions
-                else:
-                    sqlQuery = sqlQuery + '*'
-
-                sqlQuery = sqlQuery + ' FROM ' + tablename + ' '
-
-                if filterOptions:
-                    sqlQuery = sqlQuery + ' WHERE ' + filterOptions
-
-                if orderOptions:
-                    sqlQuery = sqlQuery + ' ORDER BY ' + orderOptions
-
-                if limit:
-                    sqlQuery = sqlQuery + ' LIMIT ' + str(limit)
-
-                # This is to update the connection to changes by other
-                # processes.
-                self._conn.commit()
-
-                # Return the pandas dataframe. Note that numbers in text format
-                # are not converted to
-                return pd.read_sql(sqlQuery, con=self._conn,
-                                   coerce_float=False)
-
+            sqlQuery = 'SELECT '
+            if selectOptions:
+                sqlQuery = sqlQuery + selectOptions
             else:
-                print('Error in query. Please, select a valid table name ' +
-                      'from the list')
-                print(self.getTableNames())
+                sqlQuery = sqlQuery + '*'
+
+            sqlQuery = sqlQuery + ' FROM ' + tablename + ' '
+
+            if filterOptions:
+                sqlQuery = sqlQuery + ' WHERE ' + filterOptions
+
+            if orderOptions:
+                sqlQuery = sqlQuery + ' ORDER BY ' + orderOptions
+
+            if limit:
+                sqlQuery = sqlQuery + ' LIMIT ' + str(limit)
+
+            # This is to update the connection to changes by other
+            # processes.
+            self._conn.commit()
+
+            # Return the pandas dataframe. Note that numbers in text format
+            # are not converted to
+            return pd.read_sql(sqlQuery, con=self._conn,
+                               coerce_float=False)
 
         except Exception as E:
             print(str(E))
+            print('Error in query:', sqlQuery)
+            return
+
+    def readDBchunks(self, tablename, orderField, chunksize=50000,
+                        selectOptions=None, limit=None, filterOptions=None, verbose=False):
+        """
+        Read data from a table in the database using chunks. 
+        Can choose to read only some specific fields
+        Rather than returning a dataframe, it returns an iterator that builds 
+        dataframes of desired number of rows (chunksize)
+
+        Args:
+            tablename    :  Table to read from
+            orderField   :  name of field that will be used for sorting the
+                            results of the query (e.g, 'ID'). This is the column
+                            that will be used for iteration, so this variable is mandatory
+            chunksize    :  Length of chunks for reading the table. Default value: 50000
+            selectOptions:  string with fields that will be retrieved
+                            (e.g. 'REFERENCIA, Resumen')
+                            If None, all columns will be retrieved
+            limit:          The total maximum number of records to retrieve.
+            filterOptions:  string with filtering options for the SQL query
+                            (e.g., 'UNESCO_cd=23')
+            verbose      :  If True, information on the number of rows read so far will be
+                            displayed
+        """
+
+        if limit:
+            remaining = limit
+            next_chunk = min(remaining, chunksize)
+        else:
+            next_chunk = chunksize
+
+        cont = 0
+        
+        selectOptions = selectOptions + ', ' + orderField
+
+        df = self.readDBtable(tablename, limit=next_chunk, selectOptions=selectOptions,
+                filterOptions = filterOptions, orderOptions=orderField)
+
+        while (len(df)):
+            cont = cont+len(df)
+            if verbose:
+                print('[DBManager (readDBchunks)] Number of rows read so far:', cont)
+            if limit:
+                remaining = limit - cont
+                next_chunk = min(remaining, chunksize)
+            else:
+                next_chunk = chunksize
+            yield df.iloc[:,:-1]
+
+            #Next we need to start from last retrieved element
+            filtercondition = orderField + '>' + str(df.iloc[:,-1][len(df)-1])
+            if filterOptions:
+                filtercondition = filtercondition + ' AND ' + filterOptions
+            
+            if next_chunk>0:
+                df = self.readDBtable(tablename, limit=next_chunk, selectOptions=selectOptions,
+                        filterOptions = filtercondition, orderOptions=orderField)
+            else:
+                #If maximum number of records has been reached, set df to empty list to exit
+                df = []
+
 
     def getTableNames(self):
         """
@@ -353,7 +446,7 @@ class BaseDMsql(object):
 
         return cols, n_rows
 
-    def insertInTable(self, tablename, columns, arguments):
+    def insertInTable(self, tablename, columns, arguments, chunksize=None, verbose=False):
         """
         Insert new records into table
 
@@ -362,6 +455,10 @@ class BaseDMsql(object):
             columns:    Name of columns for which data are provided
             arguments:  A list of lists or tuples, each element associated
                         to one new entry for the table
+            chunksize: If chunksize is not None, Data will be inserted in chunks
+                       of the specified size
+            verbose: True or False. If chunksize is active and verbose is True, 
+                     the progress of the chunks insertion is displayed on screen
         """
 
         # Make sure columns is a list, and not a single string
@@ -380,18 +477,105 @@ class BaseDMsql(object):
                 arguments = list(map(tuple, arguments))
 
                 sqlcmd = ('INSERT INTO ' + tablename +
-                          '(' + ','.join(columns) + ') VALUES (')
+                              '(' + ','.join(columns) + ') VALUES (')
                 if self.connector == 'mysql':
                     sqlcmd += '%s' + (ncol-1)*',%s' + ')'
-                else:
+                else:    
                     sqlcmd += '?' + (ncol-1)*',?' + ')'
 
-                self._c.executemany(sqlcmd, arguments)
+                if chunksize:
 
-                # Commit changes
-                self._conn.commit()
+                    n_chunks = np.ceil(len(arguments)/chunksize)
+                    if verbose:
+                        print('\n')
+                        bar = Bar('Inserting chunks of data in database', max=n_chunks)
+                    for chk in chunks(arguments, chunksize):
+                        if verbose:
+                            bar.next()
+                        self._c.executemany(sqlcmd, chk)
+                        self._conn.commit()
+
+                    if verbose:
+                        bar.finish()
+
+                else:
+
+                    self._c.executemany(sqlcmd, arguments)
+                    # Commit changes
+                    self._conn.commit()
+            else:
+                print('Error inserting data in table: The table does not exist')
         else:
             print('Error inserting data in table: number of columns mismatch')
+
+        return
+
+    def deleteFromTable(self, tablename, columns, arguments, chunksize=None, verbose=False):
+        """
+        Delete rows from table
+
+        Args:
+            tablename:  Name of table from which data will be removed
+            columns:    Name of columns for which data are provided
+            arguments:  A list of lists or tuples, conditions for data to be removed
+            chunksize: If chunksize is not None, Data will be deleted in chunks
+                       of the specified size
+            verbose: True or False. If chunksize is active and verbose is True, 
+                     the progress of the chunks deletion is displayed on screen
+
+        E.g., if columns is ['userID','productID'] and arguments is
+        [['234', '227'],['234', '228']] this function will delete from the
+        table all rows where userID='234' AND productID='227', and all rows
+        where userID='234' and productID='228'
+        """
+
+        # Make sure columns is a list, and not a single string
+        if not isinstance(columns, (list,)):
+            columns = [columns]
+
+        # To allow for column names that have spaces
+        columns = list(map(lambda x: '`'+x+'`', columns))
+
+        ncol = len(columns)
+
+        if len(arguments[0]) == ncol:
+            # Make sure the tablename is valid
+            if tablename in self.getTableNames():
+                # Make sure we have a list of tuples; necessary for mysql
+                arguments = list(map(tuple, arguments))
+
+                sqlcmd = 'DELETE FROM ' + tablename + ' WHERE '
+                if self.connector == 'mysql':
+                    sqlcmd += ' AND '.join([el + '=%s' for el in columns])
+                else:    
+                    sqlcmd += ' AND '.join([el + '=?' for el in columns])
+
+                if chunksize:
+
+                    n_chunks = np.ceil(len(arguments)/chunksize)
+                    if verbose:
+                        print('\n')
+                        bar = Bar('Deleting data from database', max=n_chunks)
+                    for chk in chunks(arguments, chunksize):
+                        if verbose:
+                            bar.next()
+                        self._c.executemany(sqlcmd, chk)
+                        self._conn.commit()
+
+                    if verbose:
+                        bar.finish()
+
+                else:
+
+                    self._c.executemany(sqlcmd, arguments)
+                        # Commit changes
+                    self._conn.commit()
+
+            else:
+                print('Error deleting data from table: The table does not exist')
+        
+        else:
+            print('Error deleting data from table table: number of columns mismatch')
 
         return
 
@@ -459,6 +643,9 @@ class BaseDMsql(object):
 
                 # Commit changes
                 self._conn.commit()
+
+            else:
+                print('Error udpating table values: The table does not exist')
         else:
             print('Error updating table values: number of columns mismatch')
 
@@ -570,3 +757,50 @@ class BaseDMsql(object):
 
         return
 
+    def DBdump(self, filename, tables=None):
+        """
+        Creates dump of database
+
+        Args:
+            :filename:   Name of the output file
+            :tables:     List of tables to include in the dump
+                         If None, all columns saved.
+        """
+
+        if self.connector == 'mysql':
+
+            # If tables is None, all tables are included in dump
+            if tables is None:
+                table_list = ''
+
+            else:
+
+                # It tables is not a list, make the appropriate list
+                if type(tables) is str:
+                    tables = [tables]
+
+                table_list = ' ' + ' '.join(tables)
+
+            try:
+                dumpcmd = 'mysqldump -h ' + self.server + ' -u ' + self.user + \
+                          ' -p' + self.password + ' ' + self.dbname + table_list + \
+                          ' > ' + filename
+                os.system(dumpcmd)
+            except: 
+                print('Error when creating dump. Check route to filename')
+
+        else:
+
+            print('Database dump only supported for MySQL databases')
+
+        return
+
+    def execute(self, sqlcmd):
+        """
+        Execute SQL command received as parameter
+
+        Args:
+            :
+        """
+        self._c.execute(sqlcmd)
+        return

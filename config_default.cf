@@ -10,7 +10,7 @@ MONGOdbSERVER = localhost
 MONGOdbPORT = 27017
 
 [CORDIS]
-dbNAME = db_Pr_CORDIS
+dbNAME = db_Pr_CORDIS2020
 dir_projects = ./data_Pr_CORDIS/data/ProjectData/Excel/
 dir_organizations = ./data_Pr_CORDIS/data/OrganizationData/Excel/
 dir_researchers = ./data_Pr_CORDIS/data/ResearcherProject/Excel/
