@@ -63,34 +63,6 @@ def main(resetDB=False):
 
         # os.system(cmd)
         
-        #Importamos el BOW de politecnica
-        print('Volcando los bow proporcionados por UPM')
-        lines = []
-        with open(path_tobow, 'r') as fin:
-            for i, ln in enumerate(fin.readlines()):
-                if not i%1000000:
-                    print('Numero de registros leidos:', i)
-                lines.append(ln.split(';;'))
-        lines = list(map(lambda x: (x[0], x[-1].strip()), lines))
-        lines = list(filter(lambda x: x[0]!='appln_id', lines))
-        #Escribimos en la base de datos por chunks para no saturar
-        print('Escribiendo en la Base de Datos')
-        def chunks(l, n):
-            """ Yield successive n-sized chunks from l. """
-            for i in range(0, len(l), n):
-                yield l[i: i + n]
-        chunksize = 100000
-        chunksresult = list(chunks(lines, chunksize))
-        bar = Bar('Saving Bow to database:', max=len(chunksresult))
-        bar.next()
-        for data in chunksresult:
-            DB.insertInTable('tls203_appln_abstr',
-                ['appln_id', 'appln_abstract_bow'], data)
-            bar.next()
-
-        bar.finish()
-
-
 
 if __name__ == "__main__":
 
