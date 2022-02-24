@@ -43,15 +43,6 @@ CREATE TABLE tls201_appln (
   nb_citing_docdb_fam smallint NOT NULL default '0',
   nb_applicants smallint NOT NULL default '0',
   nb_inventors smallint NOT NULL default '0',
-  PRIMARY KEY (appln_id),
-  KEY IX_internat_appln_id (internat_appln_id),
-  KEY IX_appln_auth (appln_auth,appln_nr,appln_kind),
-  KEY IX_appln_filing_date (appln_filing_date),
-  KEY IX_appln_kind (appln_kind),
-  KEY IX_docdb_family_id (docdb_family_id),
-  KEY IX_inpadoc_family_id (inpadoc_family_id),
-  KEY IX_docdb_family_id_filing_date (docdb_family_id,appln_filing_date),
-  KEY IX_inpadoc_family_id_filing_date (inpadoc_family_id,appln_filing_date)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -60,7 +51,6 @@ CREATE TABLE tls202_appln_title (
   appln_id int(11) NOT NULL DEFAULT '0',
   appln_title_lg char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   appln_title text COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (appln_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=600;
 
 
@@ -69,7 +59,6 @@ CREATE TABLE tls203_appln_abstr (
   appln_id int(11) NOT NULL DEFAULT '0',
   appln_abstract_lg char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   appln_abstract text COLLATE utf8mb4_unicode_ci,
-  PRIMARY KEY (appln_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=800;
 
 
@@ -78,8 +67,6 @@ CREATE TABLE tls204_appln_prior (
   appln_id int(11) NOT NULL DEFAULT '0',
   prior_appln_id int(11) NOT NULL DEFAULT '0',
   prior_appln_seq_nr smallint(6) NOT NULL DEFAULT '0',
-  PRIMARY KEY (appln_id,prior_appln_id),
-  KEY IX_prior_appln_id (prior_appln_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=800;
 
 
@@ -87,7 +74,6 @@ CREATE TABLE tls204_appln_prior (
 CREATE TABLE tls205_tech_rel (
   appln_id int(11) NOT NULL DEFAULT '0',
   tech_rel_appln_id int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (appln_id,tech_rel_appln_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=100;
 
 
@@ -109,16 +95,6 @@ CREATE TABLE tls206_person (
   han_id int NOT NULL DEFAULT '0',
   han_name varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   han_harmonized int NOT NULL DEFAULT '0',
-  PRIMARY KEY (person_id),
-  KEY IX_person_ctry_code (person_ctry_code),
-  KEY IX_doc_std_name_id (doc_std_name_id),
-  KEY IX_ppat_nuts (nuts),
-  KEY IX_ppat_psn_name (psn_name(250)),
-  KEY IX_ppat_psn_sector (psn_sector),
-  KEY IX_ppat_psn_id (psn_id),
-  KEY IX_ppat_han_id (han_id),
-  KEY IX_han_name (han_name(250)),
-  KEY IX_han_harmonized (han_harmonized)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=100;
 
 
@@ -128,9 +104,6 @@ CREATE TABLE tls207_pers_appln (
   appln_id int(11) NOT NULL DEFAULT '0',
   applt_seq_nr smallint(6) NOT NULL DEFAULT '0',
   invt_seq_nr smallint(6) NOT NULL DEFAULT '0',
-  PRIMARY KEY (person_id,appln_id,applt_seq_nr,invt_seq_nr),
-  KEY IX_person_id (person_id),
-  KEY IX_appln_id (appln_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -143,8 +116,6 @@ CREATE TABLE tls209_appln_ipc (
   ipc_value char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   ipc_position char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   ipc_gener_auth char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (appln_id,ipc_class_symbol,ipc_class_level),
-  KEY IX_ipc_class_symbol (ipc_class_symbol)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -152,7 +123,6 @@ CREATE TABLE tls209_appln_ipc (
 CREATE TABLE tls210_appln_n_cls (
   appln_id int(11) NOT NULL DEFAULT '0',
   nat_class_symbol varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (appln_id,nat_class_symbol)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -168,11 +138,6 @@ CREATE TABLE tls211_pat_publn (
   publn_lg char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   publn_first_grant char(1) NOT NULL DEFAULT 'N',
   publn_claims smallint(6) DEFAULT NULL,
-  PRIMARY KEY (pat_publn_id),
-  KEY IX_publn_auth (publn_auth,publn_nr,publn_kind),
-  KEY IX_appln_id (appln_id),
-  KEY IX_publn_date (publn_date),
-  KEY IX_publ_lg (publn_lg)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -188,14 +153,6 @@ CREATE TABLE tls212_citation (
   cited_npl_publn_id varchar(32) NOT NULL DEFAULT '0',
   npl_citn_seq_nr smallint(6) NOT NULL DEFAULT '0',
   citn_gener_auth char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (pat_publn_id,citn_replenished,citn_id),
-  KEY IX_cited_pat_publn_id (cited_pat_publn_id),
-  KEY cited_appln_id (cited_appln_id,pat_publn_id),
-  KEY IX_pat_citn_seq_nr (pat_citn_seq_nr),
-  KEY IX_npl_citn_seq_nr (npl_citn_seq_nr),
-  KEY IX_cited_npl_publn_id (cited_npl_publn_id),
-  KEY IX_cited_pub_seq_nr (cited_pat_publn_id,pat_citn_seq_nr),
-  KEY IX_cited_app_seq_nr (cited_appln_id,pat_citn_seq_nr)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  PACK_KEYS=0;
 
 
@@ -223,7 +180,6 @@ CREATE TABLE tls214_npl_publn (
   online_availability varchar(500) NOT NULL DEFAULT '',
   online_classification varchar(35) NOT NULL DEFAULT '',
   online_search_date varchar(8) NOT NULL DEFAULT '',
-  PRIMARY KEY (npl_publn_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=150;
 
 
@@ -234,7 +190,6 @@ CREATE TABLE tls215_citn_categ (
   citn_id smallint(6) NOT NULL DEFAULT '0',
   citn_categ char(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   relevant_claim smallint(6) NOT NULL DEFAULT 0,
-  PRIMARY KEY (pat_publn_id,citn_replenished,citn_id,citn_categ,relevant_claim)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -243,7 +198,6 @@ CREATE TABLE tls216_appln_contn (
   appln_id int(11) NOT NULL DEFAULT '0',
   parent_appln_id int(11) NOT NULL DEFAULT '0',
   contn_type char(3) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (appln_id,parent_appln_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -286,10 +240,6 @@ CREATE TABLE tls231_inpadoc_legal_event (
   reinstate_text varchar(1000) NOT NULL DEFAULT '',
   class_scheme varchar(4) NOT NULL DEFAULT '',
   class_symbol varchar(50) NOT NULL DEFAULT '',
-  PRIMARY KEY (appln_id,event_seq_nr),
-  KEY event_publn_date (event_publn_date,appln_id),
-  KEY event_type (event_type,appln_id),
-  KEY event_code (event_code,appln_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=100;
 
 
@@ -298,8 +248,6 @@ CREATE TABLE tls222_appln_jp_class (
   appln_id int(11) NOT NULL DEFAULT '0',
   jp_class_scheme varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   jp_class_symbol varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (appln_id,jp_class_scheme,jp_class_symbol),
-  KEY jp_class_symbol (jp_class_symbol,jp_class_scheme)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -307,8 +255,6 @@ CREATE TABLE tls222_appln_jp_class (
 CREATE TABLE tls223_appln_docus (
   appln_id int(11) NOT NULL DEFAULT '0',
   docus_class_symbol varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (appln_id,docus_class_symbol),
-  KEY docus_class_symbol (docus_class_symbol)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -316,7 +262,6 @@ CREATE TABLE tls223_appln_docus (
 CREATE TABLE tls224_appln_cpc (
   appln_id int(11) NOT NULL DEFAULT '0',
   cpc_class_symbol varchar(19) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (appln_id, cpc_class_symbol)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -331,7 +276,6 @@ CREATE TABLE tls225_docdb_fam_cpc (
   cpc_action_date date NOT NULL DEFAULT '9999-12-31',
   cpc_status char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   cpc_data_source char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (docdb_family_id, cpc_class_symbol, cpc_gener_auth, cpc_version)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -359,8 +303,6 @@ CREATE TABLE tls226_person_orig (
   person_ctry_code char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   residence_ctry_code char(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   role varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (person_orig_id),
-  KEY person_id (person_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -370,9 +312,6 @@ CREATE TABLE tls227_pers_publn (
   pat_publn_id int(11) NOT NULL DEFAULT '0',
   applt_seq_nr smallint(6) NOT NULL DEFAULT '0',
   invt_seq_nr smallint(6) NOT NULL DEFAULT '0',
-  PRIMARY KEY (person_id,pat_publn_id,applt_seq_nr,invt_seq_nr),
-  KEY pat_publn_id (pat_publn_id),
-  KEY person_id (person_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -380,9 +319,6 @@ CREATE TABLE tls227_pers_publn (
 CREATE TABLE tls228_docdb_fam_citn (
   docdb_family_id int(11) NOT NULL DEFAULT '0',
   cited_docdb_family_id int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (docdb_family_id,cited_docdb_family_id),
-  KEY docdb_family_id (docdb_family_id),
-  KEY cited_docdb_family_id (cited_docdb_family_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -391,8 +327,6 @@ CREATE TABLE tls229_appln_nace2 (
   appln_id int(11) NOT NULL DEFAULT '0',
   nace2_code char(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   weight float NOT NULL DEFAULT '1',
-  PRIMARY KEY (appln_id,nace2_code),
-  KEY nace2_code (nace2_code)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -401,7 +335,6 @@ CREATE TABLE tls230_appln_techn_field (
   appln_id int(11) NOT NULL DEFAULT '0',
   techn_field_nr tinyint NOT NULL DEFAULT '0',
   weight float NOT NULL DEFAULT '1',
-  PRIMARY KEY (appln_id,techn_field_nr)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -416,7 +349,6 @@ CREATE TABLE tls801_country (
   epo_member char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   oecd_member char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   discontinued char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (ctry_code)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=100;
 
 
@@ -428,7 +360,6 @@ CREATE TABLE tls803_legal_event_code (
   event_descr_orig varchar(250) NOT NULL DEFAULT '',
   event_category_code char(1) NOT NULL DEFAULT '',
   event_category_title varchar(100) NOT NULL DEFAULT '',
-  PRIMARY KEY (event_auth, event_code)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=100;
 
 
@@ -438,7 +369,6 @@ CREATE TABLE tls901_techn_field_ipc (
   techn_field_nr tinyint(4) NOT NULL DEFAULT '0',
   techn_sector varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   techn_field varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (techn_field_nr,techn_sector,techn_field,ipc_maingroup_symbol)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=100;
 
 
@@ -450,7 +380,6 @@ CREATE TABLE tls902_ipc_nace2 (
   nace2_code char(5) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   nace2_weight float NOT NULL DEFAULT '1',
   nace2_descr varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (ipc,not_with_ipc,unless_with_ipc,nace2_code)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -459,7 +388,6 @@ CREATE TABLE tls904_nuts (
   nuts varchar(5) NOT NULL,
   nuts_level int NOT NULL DEFAULT '0',
   nuts_label varchar(250) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (nuts)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ;
 
 
@@ -476,12 +404,6 @@ CREATE TABLE tls909_eee_ppat (
   person_address varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL,
   doc_std_name_id int(11) NOT NULL DEFAULT '0',
   pat_cnt int(11) NOT NULL,
-  PRIMARY KEY (person_id),
-  KEY IX_ppat_person_ctry_code (person_ctry_code),
-  KEY IX_ppat_hrm_l1 (hrm_l1(333)),
-  KEY IX_ppat_hrm_l2 (hrm_l2(333)),
-  KEY IX_ppat_sector (sector),
-  KEY IX_ppat_hrm_l2_id (hrm_l2_id)
 ) ENGINE=${ENGINE} $ROW_FORMAT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  AVG_ROW_LENGTH=100;
 
 EOF

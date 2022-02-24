@@ -86,6 +86,11 @@ function create_db() {
     echo FLUSH TABLES \; | $SENDSQL
 }
 
+function create_indexes() {
+    ./tools/create_indexes.sh $DB | mysql -vv --show-warnings -u$USER -p$PASS -h$HOST
+}
+
+
 load_table() {
     TIME=$(date '+%F %T %Z')
 	INTIME=$(date +%s)
@@ -202,6 +207,9 @@ function main(){
     load_table tls902_ipc_nace2
     load_table tls203_appln_abstr
     #load_table tls231_inpadoc_legal_event
+
+    #create indexes
+    create_indexes
 
     # finally, prints out some statistics on loaded tables
     $SENDSQL <<EOF
