@@ -1,40 +1,22 @@
+[PATSTAT]
+user = jarenas@ing.uc3m.es
+password = DEgHzI6T4Oln
+
+
+
+
+
+https://publication.epo.org/raw-data/authentication?login=jarenas@ing.uc3m.es&pwd=DEgHzI6T4Oln&action=1&format=1
+
+https://publication.epo.org/raw-data/authentication?login=jarenas@ing.uc3m.es&pwd=DEgHzI6T4Oln&action=1&format=1
+
+https://publication.epo.org/raw-data/products
+https://publication.epo.org/raw-data/products/86/editions
+https://publication.epo.org/raw-data/authentication?login=jarenas@ing.uc3m.es&pwd=DEgHzI6T4Oln&action=0&format=1
+
 [DB]
 # Connector: mysql or sqlite3
 DB_CONNECTOR = mysql
 dbUSER = PTLprojects
 dbPASS = Kts93_u17a
 dbSERVER = localhost
-
-[MONGODB]
-MONGOdbSERVER = localhost
-MONGOdbPORT = 27017
-
-[CORDIS]
-dbNAME = db_Pr_CORDIS2020
-dir_projects = ./data_Pr_CORDIS/data/ProjectData/Excel/
-dir_organizations = ./data_Pr_CORDIS/data/OrganizationData/Excel/
-dir_researchers = ./data_Pr_CORDIS/data/ResearcherProject/Excel/
-file_countries = ./data_Pr_CORDIS/data/Countries/Excel/cordisref-countries.xls
-file_activities = ./data_Pr_CORDIS/data/OrgActivity/Excel/cordisref-organizationActivityType.xls
-file_fundingsch = ./data_Pr_CORDIS/data/FundingScheme/Excel/cordisref-projectFundingSchemeCategory.xls
-file_sicCodes = ./data_Pr_CORDIS/data/sicCodes/Excel/cordisref-sicCode.xls
-file_tpc2020 = ./data_Pr_CORDIS/data/Topics/Excel/cordisref-H2020topics.xlsx
-dir_programmes = ./data_Pr_CORDIS/data/Programmes/Excel/
-dir_reports_FP7 = ./data_Pr_CORDIS/data/Reports/XML/cordis-fp7reports-xml/
-dir_reports_H2020 = ./data_Pr_CORDIS/data/Reports/XML/cordis-h2020reports-xml/
-
-generic_stw = ./lemmatizer/lemafiles/stopwords/stop-words-english5.txt
-specific_stw = ./lemmatizer/lemafiles/stopwords/Corpus_specific/stw_CORDIS.txt
-
-[SemanticScholar]
-data_files = ./data_Pu_SemanticScholar/data/
-MONGOdbNAME = db_Pu_SScholar
-MONGOdbCollection = SScholar_papers
-
-[ACL]
-dbName = db_Pu_ACL
-data_files = ./data_Pu_ACL/aclanthology.info/papers/
-pdf_files = ./data_Pu_ACL/pdfpapers/
-
-generic_stw = ./lemmatizer/lemafiles/stopwords/stop-words-english5.txt
-specific_stw = 
