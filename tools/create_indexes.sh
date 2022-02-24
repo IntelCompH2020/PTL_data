@@ -1,4 +1,4 @@
-if [[ $# != 2 ]]
+if [[ $# != 1 ]]
 then
     echo "Usage: $0 <database_name>"
     exit 1
