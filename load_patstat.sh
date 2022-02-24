@@ -209,7 +209,7 @@ function main(){
     #load_table tls231_inpadoc_legal_event
 
     #create indexes
-    create_indexes
+    #create_indexes
 
     # finally, prints out some statistics on loaded tables
     $SENDSQL <<EOF
