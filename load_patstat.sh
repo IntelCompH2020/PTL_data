@@ -87,7 +87,7 @@ function create_db() {
 }
 
 load_table() {
-	TIME=$(date '+%F %T %Z')
+    TIME=$(date '+%F %T %Z')
 	INTIME=$(date +%s)
 
 	# This removes all use of indexes for the table.
@@ -171,6 +171,7 @@ function main(){
     create_db
 
     # loads official patstat tables
+
     load_table tls201_appln
     load_table tls202_appln_title
     load_table tls204_appln_prior
