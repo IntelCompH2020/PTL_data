@@ -1,5 +1,12 @@
-# PTL_data
-ETL+lemmatization for PTL_data
+# Tools for Ingestion of PATSTAT and CORDIS data in IntelComp Data Space
 
-#Google Credentials
-export GOOGLE_APPLICATION_CREDENTIALS="/Users/jarenas/github/PTL_data/translate_creds.json"
+## Initialize the repository
+
+Comment on how to add the dbManager submodule (only if MySQL ingestion is required
+
+## Configuration file
+
+Copy config_default.cf as config.cf, and fill in the required information
+
+## Download Cordis files
+
