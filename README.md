@@ -28,7 +28,7 @@ The download of PATSTAT files cannot be automatized at this point. It is necessa
 
 The ingestion of the PATSTAT dataset is based on the [load_patstat GitHub repository](https://github.com/simonemainardi/load_patstat) that has been modified to 1) Use InnoDB as default, and 2) Import only some of the necessary files
 
-Run `./load_patstat.sh` without parameters to display a brief help. Mandatory parameters are mysql_user and password, as well as MySQL database host and name. Optionally, a -v may be passed to obtain a verbose output. For testing purposes one may want to pass the modifier -t to only load small portions of zipped csv files. Output and error logs are written to output_log_YYYY-MM-DD and error_log_YYYY-MM-DD in the `/logs` directory. One may specify a different directory using the modifier -o.
+Run `./load_patstat.sh` without parameters to display a brief help. Mandatory parameters are mysql_user and password, as well as MySQL database host and name. Optionally, a -v may be passed to obtain a verbose output. For testing purposes one may want to pass the modifier -t to only load small portions of zipped csv files. Output and error logs are written to output_log_YYYY-MM-DD and error_log_YYYY-MM-DD in the `./logs` directory. One may specify a different directory using the modifier -o.
 
     $ ./load_patstat.sh
     Usage: [-v] [-t] -u mysql_user -p mysql_pass -h mysql_host -d mysql_dbname -z patstat_zips_dir
