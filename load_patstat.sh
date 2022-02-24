@@ -215,7 +215,7 @@ EOF
 tstamp=`date +"%Y-%m-%d"`
 
 # call the main function and record both std out and std err
-main 2> $LOGPATH/error_log_$tstamp > $LOGPATH/output_log_$tstamp
+main 2> $LOGPATH/error_log_$tstamp | tee $LOGPATH/output_log_$tstamp
 
 
 # check of errors
