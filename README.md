@@ -1,30 +1,12 @@
 # Tools for Ingestion of PATSTAT and CORDIS data in IntelComp Data Space
 
-## Initialize the repository
+# **PATSTAT**
 
-Comment on how to add the dbManager submodule (only if MySQL ingestion is required
+## **Download and prepare PATSTAT data**
 
-## Configuration file
+PATSTAT files can be downloaded via web or, more conveniently, using the [getPATSTAT repository](https://github.com/IntelCompH2020/getPATSTAT). Follow instructions in the Readme file to dowload and uncompress PATSTAT Global into the local filesystem.
 
-Copy config_default.cf as config.cf, and fill in the required information
-
-## Download Cordis files
-
-The list of URLs to the Cordis files to download should be provided in file `CORDISfiles.txt`. The download of the files can be carried out executing
-
-```$ wget -i CORDISfiles.txt -P ./data/data_Pr_CORDIS/20220221/ --show-progress```
-
-The path where the files will be downloaded should be modified accordingly
-
-## PATSTAT
-
-**1. Download and prepare PATSTAT data**
-
-TBD
-
-The download of PATSTAT files cannot be automatized at this point. It is necessary to get the files for new versions via web, and using credentials. For IntelComp, UC3M will provide directly the new versions of PATSTAT every six months approximately (Spring and Autumn editions)
-
-**2. Ingest PATSTAT into MYSQL database**
+## **Ingest PATSTAT in a MYSQL database**
 
 The ingestion of the PATSTAT dataset is based on the [load_patstat GitHub repository](https://github.com/simonemainardi/load_patstat) that has been modified to 1) Use InnoDB as default, and 2) Import only some of the necessary files
 
@@ -46,6 +28,26 @@ Therefore, standard use will be:
 It is also important to note that the user must have permissions to create a new database in the MySQL server. Once the database has been created, it may be necessary to provide access to other users.
 
 Troubleshooting: Using MyISAM engine, the utility must have write privileges into MySQL data folder. This is necessary to compress database tables and to work with table indices. Make sure the user that executes load_patstat.sh has such privileges.
-   
 
+## **Ingest PATSTAT as parquet files**
+
+
+
+
+
+## Initialize the repository
+
+Comment on how to add the dbManager submodule (only if MySQL ingestion is required
+
+## Configuration file
+
+Copy config_default.cf as config.cf, and fill in the required information
+
+## Download Cordis files
+
+The list of URLs to the Cordis files to download should be provided in file `CORDISfiles.txt`. The download of the files can be carried out executing
+
+```$ wget -i CORDISfiles.txt -P ./data/data_Pr_CORDIS/20220221/ --show-progress```
+
+The path where the files will be downloaded should be modified accordingly
 
