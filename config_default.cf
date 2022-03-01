@@ -1,18 +1,4 @@
-[PATSTAT]
-user = jarenas@ing.uc3m.es
-password = DEgHzI6T4Oln
 
-
-
-
-
-https://publication.epo.org/raw-data/authentication?login=jarenas@ing.uc3m.es&pwd=DEgHzI6T4Oln&action=1&format=1
-
-https://publication.epo.org/raw-data/authentication?login=jarenas@ing.uc3m.es&pwd=DEgHzI6T4Oln&action=1&format=1
-
-https://publication.epo.org/raw-data/products
-https://publication.epo.org/raw-data/products/86/editions
-https://publication.epo.org/raw-data/authentication?login=jarenas@ing.uc3m.es&pwd=DEgHzI6T4Oln&action=0&format=1
 
 [DB]
 # Connector: mysql or sqlite3
