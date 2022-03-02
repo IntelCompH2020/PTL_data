@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # dir_parquet: full path to hdfs directory where the parquet tables will be stored
 
     cf = ConfigParser()
-    cf.read("config.cf")
+    cf.read("/export/usuarios_ml4ds/jarenas/github/IntelComp/Datalake4Us/PTL_data/config.cf")
 
     dir_data = Path(cf.get("spark", "dir_data"))
     dir_parquet = Path(cf.get("spark", "dir_parquet"))
