@@ -1,8 +1,5 @@
-
-
-[DB]
-# Connector: mysql or sqlite3
-DB_CONNECTOR = mysql
-dbUSER = PTLprojects
-dbPASS = Kts93_u17a
-dbSERVER = localhost
+[spark]
+# dir_data:     Directory where raw files are located stored
+# dir_parquet:  Directory of output parquet files.
+dir_data = /export/ml4ds/IntelComp/Datalake/PATSTAT/rawdata/2021_Autumn
+dir_parquet = /export/ml4ds/IntelComp/Datalake/PATSTAT/2021_Autumn
