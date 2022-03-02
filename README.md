@@ -29,33 +29,40 @@ It is also important to note that the user must have permissions to create a new
 
 Troubleshooting: Using MyISAM engine, the utility must have write privileges into MySQL data folder. This is necessary to compress database tables and to work with table indices. Make sure the user that executes load_patstat.sh has such privileges.
 
-## **3. Ingest PATSTAT as parquet files**
+## **3. Ingest PATSTAT as parquet files (independent of Step 2)**
+
+*3.1. PATSTAT files conversion and upload to HDFS*
 
 Zipped files provided by PATSTAT are not a good format to work with in Spark. For this reason, we should convert them go .gzip format. This can be done with the following commands that will place the gzipped files in directory `gz` under the current directory, and then upload everything to the Hadoop filesystem.
 
     $ for f in *.zip; do unzip -p "$f" | gzip -9 > "./gz/$(basename "$f" .zip).gz"; done
-    $ hdfs -put 
+    $ hdfs -put ./gz/* /path/to/hdfs/dir
 
 Note however that the conversion takes quite some time. This may not be the most efficient way to upload the tables in Spark. Alternatives to consider would be to:
 
 - work directly with the uncompressed .csv files (roughly x6 space disk, around 400 GB in total) 
 
         $ unzip -d ./csv '*.zip'
-        $ hdfs -put 
+        $ hdfs -put ./csv/* /path/to/hdfs/dir
 
 - Uncompress the files to disk, convert in .gz files, and then delete the raw .csv files. This is a tradeoff between the two previous options.
 
+*3.2. Set up configuration file*
 
+Copy config_default.cf as config.cf, and fill in the required information:
 
-## Initialize the repository
+- `dir_data` is the hdfs directory containing the .gz of .csv files
+- `dir_parquet` is the hdfs directory where the parquet tables will be stored
 
-Comment on how to add the dbManager submodule (only if MySQL ingestion is required
+*3.3. Run the main script*
 
-## Configuration file
+You are ready to go. How to lunch the script will depend on your Spark configuration. For us, this is:
 
-Copy config_default.cf as config.cf, and fill in the required information
+    $ ./script-spark -C tokencluster.json -c 4 -N 10 -S PATSTAT2parquet.py
 
-## Download Cordis files
+# **CORDIS**
+
+## **1. Download Cordis files**
 
 The list of URLs to the Cordis files to download should be provided in file `CORDISfiles.txt`. The download of the files can be carried out executing
 
