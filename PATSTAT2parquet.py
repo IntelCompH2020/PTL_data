@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # dir_parquet: full path to hdfs directory where the parquet tables will be stored
 
     cf = ConfigParser()
-    cf.read("/export/usuarios_ml4ds/jarenas/github/IntelComp/Datalake4Us/PTL_data/config.cf")
+    cf.read("config.cf")
 
     dir_data = Path(cf.get("spark", "dir_data"))
     dir_parquet = Path(cf.get("spark", "dir_parquet"))
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     tables = list(set([el.split("_")[0] for el in tables if
                 (el.endswith(".gz") or el.endswith(".csv"))]))
 
-    for tbl in sorted(tables)[3:5]:
+    for tbl in sorted(tables):
         # Read all gz or CSV of same table
         df = spark.read.csv(f"{dir_data.joinpath(tbl).as_posix()}*", header=True)
         # Save to parquet
