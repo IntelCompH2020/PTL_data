@@ -1,0 +1,18 @@
+[patstat]
+# dir_raw:      Directory where raw files are located stored
+# dir_parquet:  Directory of output parquet files.
+dir_raw = 
+dir_parquet = 
+
+[cordis]
+# dir_raw:     Directory where raw files are located
+#              under H2020, FP7 and cordis-ref subdirectories
+# dir_parquet:  Directory of output parquet files.
+dir_raw = 
+dir_parquet = 
+
+[aux]
+# dir_ss:     Directory of SemanticScholar parquet files
+# dir_patstat:     Directory of PATSTAT parquet files
+dir_ss = 
+dir_patstat = 

@@ -1,0 +1,6 @@
+[submodule "dbManager"]
+	path = dbManager
+	url = https://github.com/jeroarenas/dbManager
+[submodule "load_patstat"]
+	path = load_patstat
+	url = https://github.com/simonemainardi/load_patstat
